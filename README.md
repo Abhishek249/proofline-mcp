@@ -84,16 +84,24 @@ decide whether a violated invariant passes.
 
 ### Live product demo
 
-The repository includes a real MCP demo client and a VHS recording specification:
+The repository includes a real MCP demo client and a reproducible VHS recording specification.
+First verify the interaction directly:
 
 ```bash
 python scripts/demo_live.py
 ```
 
-To generate the animated product demo, run the **Product demo** workflow from GitHub Actions. The
-workflow installs Proofline, records the actual MCP interaction, and commits
-`assets/proofline-demo.gif`. The recording is reproducible from
-[`demo/proofline.tape`](demo/proofline.tape), not manually edited footage.
+The product video is a one-time documentation artifact, not a CI job. To record it locally, install
+[VHS](https://github.com/charmbracelet/vhs) and FFmpeg, then run this command from the repository
+root:
+
+```bash
+vhs demo/proofline.tape
+```
+
+This records the real MCP stdio interaction and writes both
+`assets/proofline-demo.gif` and `assets/proofline-demo.mp4`. Review the footage, then commit the
+two generated files. Normal GitHub Actions remain dedicated to tests and benchmarks.
 
 ## 4. Setup instructions
 
