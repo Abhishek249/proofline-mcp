@@ -28,7 +28,7 @@ async def prove() -> dict:
         await session.initialize()
         tools = await session.list_tools()
         tool_names = [tool.name for tool in tools.tools]
-        assert tool_names == ["validate_candidate_pipeline"]
+        assert set(tool_names) == {"validate_candidate_pipeline", "validate_geospatial_run"}
 
         for name, (faults, expected_status, required_failures) in SCENARIOS.items():
             response = await session.call_tool(
@@ -53,10 +53,49 @@ async def prove() -> dict:
                 }
             )
 
+        response = await session.call_tool(
+            "validate_geospatial_run",
+            {
+                "evidence": {
+                    "parent_id": "fixture-silent-success",
+                    "run_id": "run-silent-success",
+                    "orchestration_status": "SUCCESS",
+                    "worker_status": "Completed",
+                    "tile_count": 120,
+                    "polygon_generated": False,
+                    "postgres_written": False,
+                    "result_row_count": 0,
+                    "aggregated_shape_present": False,
+                }
+            },
+        )
+        assert not response.isError
+        assert response.content and hasattr(response.content[0], "text")
+        report = json.loads(response.content[0].text)
+        failed_checks = {
+            check["name"] for check in report["checks"] if check["status"] == "fail"
+        }
+        required = {
+            "result_row_exists",
+            "polygon_generated_when_tiles_exist",
+            "aggregated_shape_present_when_tiles_exist",
+        }
+        assert report["status"] == "fail"
+        assert required <= failed_checks
+        observed.append(
+            {
+                "scenario": "geospatial_silent_success",
+                "expected": "fail",
+                "actual": report["status"],
+                "failed_checks": sorted(failed_checks),
+                "run_id": report["run_id"],
+            }
+        )
+
     return {
         "proof": "PASS",
         "boundary": "MCP stdio client -> Proofline MCP server -> validation engine",
-        "mcp_tool": "validate_candidate_pipeline",
+        "mcp_tools": tool_names,
         "scenarios_verified": len(observed),
         "results": observed,
     }
