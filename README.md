@@ -1,210 +1,196 @@
 <p align="center">
-  <img src="assets/proofline-logo.png" alt="Proofline logo" width="340">
+  <img src="assets/proofline-logo.png" alt="Proofline — evidence-based validation for agentic data pipelines" width="220">
 </p>
 
-<h1 align="center">Proofline MCP</h1>
+<p align="center">
+  <strong>Evidence-based validation for data pipelines built by AI agents.</strong>
+</p>
 
-[![CI](https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml)
+<p align="center">
+  <a href="https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml"><img src="https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml/badge.svg" alt="CI"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-16a085" alt="MIT License"></a>
+  <img src="https://img.shields.io/badge/MCP-stdio-6f42c1" alt="MCP stdio">
+</p>
 
-**A validation control plane for data pipelines written by AI agents.**
+## 1. What is Proofline MCP?
 
-Coding agents can now generate an ingestion or transformation pipeline in minutes. The harder
-question is whether the generated pipeline silently changed the data. Proofline runs a candidate
-implementation against a trusted reference, executes deterministic invariants, and returns a
-machine-readable evidence report through the Model Context Protocol (MCP).
+Proofline is an open-source **validation control plane for agentic data pipelines**. It gives coding
+agents and AI-assisted engineering workflows an MCP tool that answers a question conventional job
+status cannot:
 
-This repository is a working vertical slice built around NYC taxi-shaped trip data. It includes a
-deterministic local fixture, four realistic defect classes, five validation checks, and an MCP tool
-an agent can invoke before accepting its own pipeline change.
+> The pipelineless job says “success”—but did the correct data actually land in the correct place?
 
-## Proof that it works
+Proofline compares observed pipeline behavior with deterministic invariants or a trusted reference
+and returns a structured evidence report: pass/fail, expected value, actual value, and diagnostic
+context. An agent can call it before accepting a generated pipeline change, approving a deployment,
+or reporting that a run is healthy.
 
-### Verified GitHub Actions result
+The server currently exposes two tools:
 
-[View the successful independent run](https://github.com/Abhishek249/proofline-mcp/actions/runs/34443656200)
+| MCP tool | Purpose |
+|---|---|
+| `validate_candidate_pipeline` | Reproducible reference-versus-candidate validation using the public taxi-shaped benchmark |
+| `validate_geospatial_run` | Domain-neutral semantic checks from orchestrator, worker, database, and spatial evidence |
+
+## 2. Why does it exist?
+
+AI coding agents can generate ingestion and transformation code quickly, but a syntactically valid
+change is not necessarily a semantically correct pipeline. Unit tests and orchestration status cover
+only part of the failure surface.
+
+Proofline targets the **semantic correctness gap** in agentic data engineering:
+
+- **Silent-success failures:** the orchestrator is green while an expected row, partition, polygon,
+  or aggregate was never produced.
+- **Schema and data-contract drift:** a generated transformation changes keys, cardinality, types,
+  partitions, or null behavior without crashing.
+- **Behavioral regression:** candidate output differs from a golden dataset or last-known-good
+  implementation even though both jobs complete.
+- **Distributional drift:** time buckets, geospatial areas, aggregates, and other population-level
+  signals shift because of timezone, mapping, filtering, or join defects.
+- **Weak agent feedback loops:** coding agents see logs and exit codes, but lack deterministic,
+  machine-readable evidence explaining what invariant failed.
+- **Fragmented observability:** orchestration metadata, worker status, database state, and output
+  quality are checked independently instead of as one cross-system assertion.
+- **Unverifiable AI-generated changes:** an agent proposes code without attaching a reproducible
+  evaluation record that a human or another agent can audit.
+
+In AI-platform terms, Proofline acts as an **eval and guardrail at the data-pipeline boundary**. MCP
+makes that eval callable by any compatible agent, while deterministic checks keep the final decision
+outside the language model. Proofline complements logs, traces, unit tests, and data observability;
+it does not replace them.
+
+## 3. How does it work?
+
+```mermaid
+flowchart TD
+    A["Agent changes pipeline"] --> B["Reference or evidence"]
+    B --> C["Deterministic invariants"]
+    C --> D["Structured proof report"]
+    D --> E["MCP response"]
+    E --> F{"Accept change?"}
+```
+
+1. The agent or automation supplies candidate output or an evidence envelope.
+2. Proofline evaluates exact invariants: row counts, key sets, uniqueness, aggregates,
+   distributions, write completion, shape presence, session parity, area drift, or Jaccard.
+3. Each check records its expectation, observed value, status, and focused evidence.
+4. The MCP tool returns an overall decision plus every individual check.
+5. The caller can block acceptance on `status: "fail"` and use the evidence to diagnose or repair
+   the pipeline.
+
+Proofline's decision path is deterministic: the LLM chooses when to call the tool, but it does not
+decide whether a violated invariant passes.
+
+### Live product demo
+
+The repository includes a real MCP demo client and a VHS recording specification:
+
+```bash
+python scripts/demo_live.py
+```
+
+To generate the animated product demo, run the **Product demo** workflow from GitHub Actions. The
+workflow installs Proofline, records the actual MCP interaction, and commits
+`assets/proofline-demo.gif`. The recording is reproducible from
+[`demo/proofline.tape`](demo/proofline.tape), not manually edited footage.
+
+## 4. Setup instructions
+
+Requires Python 3.11 or newer.
+
+```bash
+git clone https://github.com/Abhishek249/proofline-mcp.git
+cd proofline-mcp
+
+python -m venv .venv
+source .venv/bin/activate
+pip install -e ".[dev]"
+
+ruff check .
+pytest
+```
+
+Run the local MCP server over stdio:
+
+```bash
+proofline-mcp
+```
+
+Example Cursor-compatible MCP configuration:
+
+```json
+{
+  "mcpServers": {
+    "proofline": {
+      "command": "/absolute/path/proofline-mcp/.venv/bin/proofline-mcp"
+    }
+  }
+}
+```
+
+Restart the MCP client after changing its configuration. It should discover
+`validate_candidate_pipeline` and `validate_geospatial_run`.
+
+Run the public proof and benchmark:
+
+```bash
+python scripts/prove_it.py
+python scripts/benchmark_mcp.py --output benchmark-report.json
+```
+
+Docker users can build the stdio server with:
+
+```bash
+docker build -t proofline-mcp .
+docker run --rm -i proofline-mcp
+```
+
+## 5. Results on NYC taxi-shaped trip data
+
+The public benchmark generates deterministic taxi-shaped trips, executes a trusted reference and a
+candidate pipeline, and injects four known defect classes across four seeds and two dataset sizes.
+Every trial crosses a real MCP stdio client/server boundary.
+
+[View the successful GitHub Actions run](https://github.com/Abhishek249/proofline-mcp/actions/runs/34443656200)
 · [Read the permanent benchmark record](docs/verified-benchmark-2026-09-10.md)
 
-| Signal | Verified result |
+| Verified signal | Result |
 |---|---:|
 | Tests | 12 passed |
 | Code coverage | 91% |
 | MCP benchmark trials | 40 |
+| Defect trials | 32 |
+| Clean trials | 8 |
 | Defects detected | 32/32 |
 | Detection recall | 100% |
 | False-positive rate | 0% |
 | Required-diagnostic accuracy | 100% |
 | MCP call latency | 3.213 ms p50 / 5.263 ms p95 |
 
-Measured on GitHub-hosted Ubuntu 24.04 with Python 3.12.14. Results apply to the repository's
-controlled deterministic fault matrix; they are not claims about arbitrary production pipelines.
+| Injected defect | Required evidence | Outcome |
+|---|---|---:|
+| Duplicate records | Duplicate keys and row-count drift | Detected |
+| Missing partition | Missing keys and aggregate drift | Detected |
+| Timezone shift | Pickup-hour distribution drift | Detected |
+| Wrong zone mapping | Per-zone fare aggregate drift | Detected |
 
-The proof harness starts a real Proofline MCP server as a subprocess, performs the MCP handshake,
-discovers the tool, invokes it for five controlled scenarios, and asserts the expected outcome and
-diagnostic evidence. This tests the public protocol boundary—not an internal function shortcut.
-
-```bash
-python scripts/prove_it.py
-```
-
-The committed [proof report](docs/proof-report.json) records the reproducible result. CI regenerates
-the same proof on every push. At seed 42 with 500 source records:
-
-| Scenario | Expected decision | Required diagnostic | Result |
-|---|---:|---|---:|
-| Clean candidate | Pass | No failed checks | Pass |
-| Duplicate rows | Fail | `key_uniqueness` | Detected |
-| Missing partition | Fail | `key_set` | Detected |
-| Timezone shift | Fail | `pickup_hour_distribution` | Detected |
-| Wrong zone mapping | Fail | `fare_by_pickup_zone` | Detected |
-
-
-### Reproduce the statistics
-
-```bash
-python scripts/benchmark_mcp.py --output benchmark-report.json
-```
-
-The benchmark performs 40 calls through a real MCP client/server session: four deterministic seeds,
-two dataset sizes, one clean scenario, and four controlled defect classes. It reports detection
-recall, false-positive rate, required-diagnostic accuracy, and p50/p95 MCP call latency.
-
-GitHub Actions runs the benchmark on every push and on manual dispatch, writes the metrics into the
-workflow summary, and uploads the complete JSON evidence as the `proofline-benchmark` artifact.
-Statistics are scoped to this published controlled test matrix; they are not claims about arbitrary
-production pipelines.
-
-## Why this matters
-
-Traditional data-quality tests ask whether one dataset satisfies fixed rules. Proofline asks a
-different question: **is the agent's new implementation behaviorally equivalent to the trusted
-pipeline, and what evidence supports that conclusion?**
-
-| Injected defect | Evidence that exposes it |
-|---|---|
-| Duplicate records | row-count drift and duplicate keys |
-| Missing daily partition | missing keys and aggregate drift |
-| Timezone conversion error | pickup-hour distribution drift |
-| Incorrect zone mapping | per-zone fare aggregate drift |
-
-## Quick start
-
-Requires Python 3.11+.
-
-```bash
-python -m venv .venv
-source .venv/bin/activate
-pip install -e ".[dev]"
-pytest
-```
-
-Run a clean candidate:
-
-```bash
-proofline --rows 1000
-```
-
-Inject a defect and inspect the evidence:
-
-```bash
-proofline --fault missing_partition --fault duplicate_rows
-```
-
-Run the MCP server over stdio:
-
-```bash
-proofline-mcp
-```
-
-The server exposes `validate_candidate_pipeline`, with `faults`, `row_count`, and `seed` as inputs.
-For example, an MCP client can request validation with `faults=["timezone_shift"]` and receive the
-overall decision, every check, expected and actual values, and focused failure evidence.
-
-
-## Validate a real geospatial run
-
-Proofline also exposes `validate_geospatial_run`. It accepts a typed evidence envelope collected
-from your existing orchestrator, worker, database, and spatial comparison scripts. Proofline does
-not need—and should not receive—database credentials or proprietary source code.
-
-Example MCP arguments:
-
-```json
-{
-  "evidence": {
-    "parent_id": "fixture-1290",
-    "run_id": "orchestrator-run-123",
-    "orchestration_status": "SUCCESS",
-    "worker_status": "Completed",
-    "tile_count": 120,
-    "polygon_generated": false,
-    "postgres_written": false,
-    "result_row_count": 0,
-    "aggregated_shape_present": false,
-    "expected_session_count": 12,
-    "actual_session_count": 12,
-    "reference_area": 100.0,
-    "candidate_area": 0.0,
-    "jaccard_index": 0.0
-  }
-}
-```
-
-This run fails even though orchestration reports `SUCCESS`, because tiles existed but no polygon or
-database result was produced. The response identifies the violated invariants and includes the
-observed evidence. Optional reference fields add session-count, relative-area, and Jaccard checks.
-
-A practical agent workflow is:
-
-1. Trigger or inspect a pipeline run using the environment's existing tools.
-2. Collect the non-secret evidence fields above.
-3. Call `validate_geospatial_run`.
-4. Accept the deployment only when Proofline returns `status: "pass"`.
-
-## Architecture
-
-```mermaid
-flowchart TD
-    A["Agent changes pipeline"] --> B["Reference and candidate runs"]
-    B --> C["Deterministic validators"]
-    C --> D["Evidence report"]
-    D --> E["MCP response to agent"]
-    E --> F{"Accept change?"}
-```
-
-The MVP deliberately keeps orchestration separate from validation logic:
-
-- `fixtures.py` creates reproducible taxi-shaped source records.
-- `pipelines.py` contains the reference, candidate, and controlled defect injection.
-- `validators.py` produces evidence-bearing check results.
-- `runner.py` creates stable run identities and the final report.
-- `server.py` exposes the capability through MCP.
-
-## Research direction
-
-Proofline is designed to grow into a benchmark for **agent-generated data pipeline reliability**.
-A publishable evaluation would give coding agents transformation tasks, inject or observe defect
-classes, and measure detection recall, false-positive rate, time-to-diagnosis, and evidence quality
-across validation strategies.
-
-The next milestone replaces the synthetic fixture with public NYC Taxi & Limousine Commission
-Parquet files, adds DuckDB-based candidate implementations, and stores signed provenance for every
-artifact. The synthetic mode remains important: it makes CI deterministic and provides known
-ground truth for each defect.
+These results establish reproducibility for Proofline's **published controlled fault model** on a
+GitHub-hosted Ubuntu 24.04 runner with Python 3.12.14. They are not claims about arbitrary production
+pipelines. Validation against external, real-world geospatial infrastructure is a separate milestone.
 
 ## Roadmap
 
-- [x] Reproducible reference and candidate pipelines
-- [x] Controlled fault injection and evidence-rich checks
-- [x] MCP server, CLI, tests, Docker image, and CI
-- [x] Reusable geospatial evidence contract and MCP validator
-- [ ] Pluggable PostgreSQL and orchestrator adapters
-- [ ] NYC TLC Parquet adapter and schema contracts
-- [ ] Agent task corpus and benchmark harness
-- [ ] OpenTelemetry traces and signed evidence bundles
-- [ ] Kubernetes deployment and policy-gated pull-request integration
-- [ ] Empirical study and research paper
+- [x] Deterministic reference/candidate framework
+- [x] Evidence-rich MCP tools
+- [x] Controlled fault injection
+- [x] Independent GitHub Actions proof and benchmark
+- [x] Reusable geospatial evidence contract
+- [ ] Real public NYC TLC Parquet adapter
+- [ ] Pluggable PostgreSQL and orchestration adapters
+- [ ] Signed evidence bundles and OpenTelemetry traces
+- [ ] Policy-gated pull-request integration
+- [ ] Empirical evaluation and research paper
 
-## Project status
-
-Proofline is an early research prototype. It should not yet be used as a production quality gate.
-Contributions and benchmark defect cases are welcome.
+Proofline is an early research prototype and is not yet a production quality gate. Contributions,
+fault cases, and benchmark improvements are welcome.
