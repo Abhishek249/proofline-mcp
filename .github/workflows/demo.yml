@@ -32,11 +32,12 @@ jobs:
       - name: Verify generated demo
         run: |
           test -s assets/proofline-demo.gif
-          file assets/proofline-demo.gif
+          test -s assets/proofline-demo.mp4
+          file assets/proofline-demo.gif assets/proofline-demo.mp4
       - name: Commit generated GIF
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: "docs: update live Proofline demo"
-          file_pattern: assets/proofline-demo.gif
+          file_pattern: assets/proofline-demo.gif assets/proofline-demo.mp4
           commit_user_name: proofline-demo-bot
           commit_user_email: actions@github.com
