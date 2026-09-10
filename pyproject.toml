@@ -1,0 +1,39 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "proofline-mcp"
+version = "0.1.0"
+description = "An MCP validation control plane for agentically developed data pipelines."
+readme = "README.md"
+requires-python = ">=3.11"
+license = { text = "MIT" }
+authors = [{ name = "Abhishek Jain" }]
+dependencies = [
+  "mcp>=1.12,<2",
+  "pydantic>=2.8,<3",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2,<9",
+  "pytest-cov>=5,<7",
+  "ruff>=0.6,<1",
+]
+tlc = ["duckdb>=1.1,<2"]
+
+[project.scripts]
+proofline = "proofline.cli:main"
+proofline-mcp = "proofline.server:main"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/proofline"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"
