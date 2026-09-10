@@ -24,8 +24,13 @@ jobs:
       - name: Record real MCP interaction
         working-directory: demo
         run: "$(go env GOPATH)/bin/vhs proofline.tape"
-      - name: Verify generated demo
+      - name: Publish generated demo
         run: |
+          test -s demo/proofline-demo.gif
+          test -s demo/proofline-demo.mp4
+          mkdir -p assets
+          mv demo/proofline-demo.gif assets/proofline-demo.gif
+          mv demo/proofline-demo.mp4 assets/proofline-demo.mp4
           test -s assets/proofline-demo.gif
           test -s assets/proofline-demo.mp4
           file assets/proofline-demo.gif assets/proofline-demo.mp4
