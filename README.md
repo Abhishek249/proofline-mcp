@@ -1,5 +1,7 @@
 # Proofline MCP
 
+[![CI](https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml)
+
 **A validation control plane for data pipelines written by AI agents.**
 
 Coding agents can now generate an ingestion or transformation pipeline in minutes. The harder
@@ -103,4 +105,3 @@ ground truth for each defect.
 
 Proofline is an early research prototype. It should not yet be used as a production quality gate.
 Contributions and benchmark defect cases are welcome.
-
