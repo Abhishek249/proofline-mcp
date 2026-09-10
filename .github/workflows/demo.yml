@@ -2,12 +2,6 @@ name: Product demo
 
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/demo.yml"
-      - "demo/proofline.tape"
-      - "scripts/demo_live.py"
-      - "src/proofline/**"
 
 permissions:
   contents: write
@@ -28,7 +22,8 @@ jobs:
           sudo apt-get install --yes ffmpeg ttyd
           go install github.com/charmbracelet/vhs@v0.12.0
       - name: Record real MCP interaction
-        run: "$(go env GOPATH)/bin/vhs demo/proofline.tape"
+        working-directory: demo
+        run: "$(go env GOPATH)/bin/vhs proofline.tape"
       - name: Verify generated demo
         run: |
           test -s assets/proofline-demo.gif
