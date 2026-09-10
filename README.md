@@ -19,6 +19,25 @@ an agent can invoke before accepting its own pipeline change.
 
 ## Proof that it works
 
+### Verified GitHub Actions result
+
+[View the successful independent run](https://github.com/Abhishek249/proofline-mcp/actions/runs/34443656200)
+· [Read the permanent benchmark record](docs/verified-benchmark-2026-09-10.md)
+
+| Signal | Verified result |
+|---|---:|
+| Tests | 12 passed |
+| Code coverage | 91% |
+| MCP benchmark trials | 40 |
+| Defects detected | 32/32 |
+| Detection recall | 100% |
+| False-positive rate | 0% |
+| Required-diagnostic accuracy | 100% |
+| MCP call latency | 3.213 ms p50 / 5.263 ms p95 |
+
+Measured on GitHub-hosted Ubuntu 24.04 with Python 3.12.14. Results apply to the repository's
+controlled deterministic fault matrix; they are not claims about arbitrary production pipelines.
+
 The proof harness starts a real Proofline MCP server as a subprocess, performs the MCP handshake,
 discovers the tool, invokes it for five controlled scenarios, and asserts the expected outcome and
 diagnostic evidence. This tests the public protocol boundary—not an internal function shortcut.
