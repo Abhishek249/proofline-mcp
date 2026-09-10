@@ -1,0 +1,57 @@
+{
+  "proof": "PASS",
+  "boundary": "MCP stdio client -> Proofline MCP server -> validation engine",
+  "mcp_tool": "validate_candidate_pipeline",
+  "scenarios_verified": 5,
+  "results": [
+    {
+      "scenario": "clean",
+      "expected": "pass",
+      "actual": "pass",
+      "failed_checks": [],
+      "run_id": "5205768c395347d8"
+    },
+    {
+      "scenario": "duplicate_rows",
+      "expected": "fail",
+      "actual": "fail",
+      "failed_checks": [
+        "fare_by_pickup_zone",
+        "key_uniqueness",
+        "pickup_hour_distribution",
+        "row_count"
+      ],
+      "run_id": "e3895144d38fce0d"
+    },
+    {
+      "scenario": "missing_partition",
+      "expected": "fail",
+      "actual": "fail",
+      "failed_checks": [
+        "fare_by_pickup_zone",
+        "key_set",
+        "pickup_hour_distribution",
+        "row_count"
+      ],
+      "run_id": "d7391aa70b7678b4"
+    },
+    {
+      "scenario": "timezone_shift",
+      "expected": "fail",
+      "actual": "fail",
+      "failed_checks": [
+        "pickup_hour_distribution"
+      ],
+      "run_id": "03e8c9026f425087"
+    },
+    {
+      "scenario": "wrong_zone_mapping",
+      "expected": "fail",
+      "actual": "fail",
+      "failed_checks": [
+        "fare_by_pickup_zone"
+      ],
+      "run_id": "47042b3a77f060b0"
+    }
+  ]
+}

@@ -1,4 +1,8 @@
-# Proofline MCP
+<p align="center">
+  <img src="assets/proofline-logo.png" alt="Proofline logo" width="340">
+</p>
+
+<h1 align="center">Proofline MCP</h1>
 
 [![CI](https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/Abhishek249/proofline-mcp/actions/workflows/ci.yml)
 
@@ -12,6 +16,27 @@ machine-readable evidence report through the Model Context Protocol (MCP).
 This repository is a working vertical slice built around NYC taxi-shaped trip data. It includes a
 deterministic local fixture, four realistic defect classes, five validation checks, and an MCP tool
 an agent can invoke before accepting its own pipeline change.
+
+## Proof that it works
+
+The proof harness starts a real Proofline MCP server as a subprocess, performs the MCP handshake,
+discovers the tool, invokes it for five controlled scenarios, and asserts the expected outcome and
+diagnostic evidence. This tests the public protocol boundary—not an internal function shortcut.
+
+```bash
+python scripts/prove_it.py
+```
+
+The committed [proof report](docs/proof-report.json) records the reproducible result. CI regenerates
+the same proof on every push. At seed 42 with 500 source records:
+
+| Scenario | Expected decision | Required diagnostic | Result |
+|---|---:|---|---:|
+| Clean candidate | Pass | No failed checks | Pass |
+| Duplicate rows | Fail | `key_uniqueness` | Detected |
+| Missing partition | Fail | `key_set` | Detected |
+| Timezone shift | Fail | `pickup_hour_distribution` | Detected |
+| Wrong zone mapping | Fail | `fare_by_pickup_zone` | Detected |
 
 ## Why this matters
 

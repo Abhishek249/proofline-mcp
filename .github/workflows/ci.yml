@@ -19,4 +19,5 @@ jobs:
       - run: pip install -e ".[dev]"
       - run: ruff check .
       - run: pytest --cov=proofline --cov-report=term-missing
-
+      - name: Prove behavior through MCP
+        run: python scripts/prove_it.py
