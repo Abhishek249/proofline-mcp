@@ -84,6 +84,16 @@ decide whether a violated invariant passes.
 
 ### Live product demo
 
+<p align="center">
+  <a href="assets/proofline-demo.mp4">
+    <img src="assets/proofline-demo.gif" alt="Proofline MCP validating clean and defective data pipelines live" width="900">
+  </a>
+</p>
+
+<p align="center">
+  <a href="assets/proofline-demo.mp4">Watch the MP4 version</a>
+</p>
+
 The repository includes a real MCP demo client and a reproducible VHS recording specification.
 First verify the interaction directly:
 
@@ -99,9 +109,9 @@ root:
 vhs demo/proofline.tape
 ```
 
-This records the real MCP stdio interaction and writes both
-`assets/proofline-demo.gif` and `assets/proofline-demo.mp4`. Review the footage, then commit the
-two generated files. Normal GitHub Actions remain dedicated to tests and benchmarks.
+This records the real MCP stdio interaction as `assets/proofline-demo.gif`. The checked-in MP4 is
+derived from that recording with FFmpeg. Normal GitHub Actions remain dedicated to tests and
+benchmarks.
 
 ## 4. Setup instructions
 
