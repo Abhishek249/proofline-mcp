@@ -84,6 +84,47 @@ The server exposes `validate_candidate_pipeline`, with `faults`, `row_count`, an
 For example, an MCP client can request validation with `faults=["timezone_shift"]` and receive the
 overall decision, every check, expected and actual values, and focused failure evidence.
 
+
+## Validate a real geospatial run
+
+Proofline also exposes `validate_geospatial_run`. It accepts a typed evidence envelope collected
+from your existing orchestrator, worker, database, and spatial comparison scripts. Proofline does
+not need—and should not receive—database credentials or proprietary source code.
+
+Example MCP arguments:
+
+```json
+{
+  "evidence": {
+    "parent_id": "fixture-1290",
+    "run_id": "orchestrator-run-123",
+    "orchestration_status": "SUCCESS",
+    "worker_status": "Completed",
+    "tile_count": 120,
+    "polygon_generated": false,
+    "postgres_written": false,
+    "result_row_count": 0,
+    "aggregated_shape_present": false,
+    "expected_session_count": 12,
+    "actual_session_count": 12,
+    "reference_area": 100.0,
+    "candidate_area": 0.0,
+    "jaccard_index": 0.0
+  }
+}
+```
+
+This run fails even though orchestration reports `SUCCESS`, because tiles existed but no polygon or
+database result was produced. The response identifies the violated invariants and includes the
+observed evidence. Optional reference fields add session-count, relative-area, and Jaccard checks.
+
+A practical agent workflow is:
+
+1. Trigger or inspect a pipeline run using the environment's existing tools.
+2. Collect the non-secret evidence fields above.
+3. Call `validate_geospatial_run`.
+4. Accept the deployment only when Proofline returns `status: "pass"`.
+
 ## Architecture
 
 ```mermaid
@@ -120,6 +161,8 @@ ground truth for each defect.
 - [x] Reproducible reference and candidate pipelines
 - [x] Controlled fault injection and evidence-rich checks
 - [x] MCP server, CLI, tests, Docker image, and CI
+- [x] Reusable geospatial evidence contract and MCP validator
+- [ ] Pluggable PostgreSQL and orchestrator adapters
 - [ ] NYC TLC Parquet adapter and schema contracts
 - [ ] Agent task corpus and benchmark harness
 - [ ] OpenTelemetry traces and signed evidence bundles
