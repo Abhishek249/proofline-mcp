@@ -38,6 +38,22 @@ the same proof on every push. At seed 42 with 500 source records:
 | Timezone shift | Fail | `pickup_hour_distribution` | Detected |
 | Wrong zone mapping | Fail | `fare_by_pickup_zone` | Detected |
 
+
+### Reproduce the statistics
+
+```bash
+python scripts/benchmark_mcp.py --output benchmark-report.json
+```
+
+The benchmark performs 40 calls through a real MCP client/server session: four deterministic seeds,
+two dataset sizes, one clean scenario, and four controlled defect classes. It reports detection
+recall, false-positive rate, required-diagnostic accuracy, and p50/p95 MCP call latency.
+
+GitHub Actions runs the benchmark on every push and on manual dispatch, writes the metrics into the
+workflow summary, and uploads the complete JSON evidence as the `proofline-benchmark` artifact.
+Statistics are scoped to this published controlled test matrix; they are not claims about arbitrary
+production pipelines.
+
 ## Why this matters
 
 Traditional data-quality tests ask whether one dataset satisfies fixed rules. Proofline asks a
