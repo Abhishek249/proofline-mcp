@@ -88,7 +88,10 @@ async def main() -> None:
         await pause(f"   Semantic decision: {RED}{BOLD}{geo['status'].upper()}{RESET}")
         await pause(f"   Violations: {', '.join(geo_failures)}")
 
-    await pause(f"\n{GREEN}{BOLD}Proof complete: green jobs are not accepted without evidence.{RESET}", 1.2)
+    await pause(
+        f"\\n{GREEN}{BOLD}Proof complete: green jobs are not accepted without evidence.{RESET}",
+        1.2,
+    )
 
 
 if __name__ == "__main__":
