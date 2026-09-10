@@ -18,7 +18,7 @@ Proofline is an open-source **validation control plane for agentic data pipeline
 agents and AI-assisted engineering workflows an MCP tool that answers a question conventional job
 status cannot:
 
-> The pipelineless job says “success”—but did the correct data actually land in the correct place?
+> The pipeline job says “success”—but did the correct data actually land in the correct place?
 
 Proofline compares observed pipeline behavior with deterministic invariants or a trusted reference
 and returns a structured evidence report: pass/fail, expected value, actual value, and diagnostic
