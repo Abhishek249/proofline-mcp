@@ -1,4 +1,4 @@
-Output assets/proofline-demo.gif
+Output ../assets/proofline-demo.gif
 
 Set Shell "bash"
 Set FontSize 22
