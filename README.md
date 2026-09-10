@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/proofline-logo.png" alt="Proofline — evidence-based validation for agentic data pipelines" width="220">
+  <img src="assets/proofline-logo-tagline.png" alt="Proofline — evidence-based validation for agentic data pipelines" width="220">
 </p>
 
 <p align="center">
